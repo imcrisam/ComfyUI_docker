@@ -1,0 +1,22 @@
+services:  
+  ai:
+    build:
+      context: ../
+      dockerfile: ./docker_cuda/Dockerfile
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    ports:
+      - '8188:8188'
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+    volumes:
+      - /mnt/d/AI_ComfyUI/models:/app/models
+      - /mnt/d/AI_ComfyUI/input:/app/input
+      - /mnt/d/AI_ComfyUI/output:/app/output
+      - /mnt/d/AI_ComfyUI/custom:/app/custom_nodes
+
