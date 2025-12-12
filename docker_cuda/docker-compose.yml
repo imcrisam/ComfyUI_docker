@@ -10,13 +10,49 @@ services:
             - driver: nvidia
               count: all
               capabilities: [gpu]
+
+    runtime: nvidia
+    # 🔥 FIX 1: Desactiva aislamiento de memoria IPC
+    ipc: "host"
+    # 🔥 FIX 2: Aumenta shared memory (PyTorch + FLOW + FP8 lo necesitan)
+    shm_size: "32g"
+
+    # restart: unless-stopped
+
     ports:
       - '8188:8188'
     environment:
       - NVIDIA_VISIBLE_DEVICES=all
-    volumes:
-      - /mnt/d/AI_ComfyUI/models:/app/models
-      - /mnt/d/AI_ComfyUI/input:/app/input
-      - /mnt/d/AI_ComfyUI/output:/app/output
-      - /mnt/d/AI_ComfyUI/custom:/app/custom_nodes
+      - NVIDIA_DRIVER_CAPABILITIES=all
 
+      # --- PyTorch / CUDA optimizaciones FP8 ---
+      - COMFYUI_FORCE_CUDA=1
+      - TORCH_CUDA_ARCH_LIST=8.6
+      - COMFYUI_SECURITY_LEVEL=0
+      
+      # 🔥 Permite a CUDA usar segmentos expandibles → usa VRAM MUCHÍSIMO MEJOR
+      - PYTORCH_CUDA_ALLOC_CONF=max_split_size_mb:128,garbage_collection_threshold:0.6
+
+      # 🔥 Necesario para FP8 — activa compilador nuevo
+      - NVFUSER_DISABLE=0
+      - PYTORCH_NVFUSER_DISABLE=0
+      - TORCHDYNAMO_DISABLE=0
+      - PYTORCH_JIT_DISABLE=0
+
+      # 🔥 Acelera kernels SD3/WAN2.2
+      - PYTORCH_CUDA_ALLOW_FP8=1
+      - PYTORCH_CUDA_MAX_SPLIT_SIZE_MB=128
+
+      # --- Evita swaps agresivos en RAM ---
+      - MALLOC_TRIM_THRESHOLD_=1000000000
+
+    volumes:
+      - /mnt/e/AI_ComfyUI/models:/app/models
+      - /mnt/e/AI_ComfyUI/input:/app/input
+      - /mnt/e/AI_ComfyUI/output:/app/output
+      - /mnt/e/AI_ComfyUI/custom_nodes:/app/custom_nodes
+      - /mnt/e/AI_ComfyUI/workflows:/app/workflows
+
+    ulimits:
+      memlock: -1
+      nofile: 65536
