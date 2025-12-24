@@ -1,5 +1,6 @@
-services:  
+services:
   ai:
+    image: comfy-app
     build:
       context: ../
       dockerfile: ./docker_cuda/Dockerfile
@@ -28,7 +29,7 @@ services:
       # --- PyTorch / CUDA optimizaciones FP8 ---
       - COMFYUI_FORCE_CUDA=1
       - TORCH_CUDA_ARCH_LIST=8.6
-      - COMFYUI_SECURITY_LEVEL=0
+      # - COMFYUI_SECURITY_LEVEL=weak
       
       # 🔥 Permite a CUDA usar segmentos expandibles → usa VRAM MUCHÍSIMO MEJOR
       - PYTORCH_CUDA_ALLOC_CONF=max_split_size_mb:128,garbage_collection_threshold:0.6

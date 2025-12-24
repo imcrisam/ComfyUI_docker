@@ -22,6 +22,18 @@ alembic
 SQLAlchemy
 av>=14.2.0
 
+#audio tools
+sounddevice
+easydict
+sox
+librosa
+pydub
+pyyaml
+rotary-embedding-torch
+typeguard
+git+https://github.com/SesameAILabs/silentcipher
+torch_complex
+
 #non essential dependencies:
 kornia>=0.7.1
 spandrel
