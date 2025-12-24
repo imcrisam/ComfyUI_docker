@@ -53,6 +53,7 @@ services:
       - /mnt/e/AI_ComfyUI/output:/app/output
       - /mnt/e/AI_ComfyUI/custom_nodes:/app/custom_nodes
       - /mnt/e/AI_ComfyUI/workflows:/app/workflows
+      - ./manager/config.ini:/app/user/__manager/config.ini
 
     ulimits:
       memlock: -1
