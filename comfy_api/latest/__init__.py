@@ -1,16 +1,15 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Type, TYPE_CHECKING
+from typing import TYPE_CHECKING
 from comfy_api.internal import ComfyAPIBase
 from comfy_api.internal.singleton import ProxiedSingleton
 from comfy_api.internal.async_to_sync import create_sync_class
 from ._input import ImageInput, AudioInput, MaskInput, LatentInput, VideoInput
 from ._input_impl import VideoFromFile, VideoFromComponents
-from ._util import VideoCodec, VideoContainer, VideoComponents, MESH, VOXEL
+from ._util import VideoCodec, VideoContainer, VideoComponents, MESH, VOXEL, File3D
 from . import _io_public as io
 from . import _ui_public as ui
-# from comfy_api.latest._resources import _RESOURCES as resources  #noqa: F401
 from comfy_execution.utils import get_executing_context
 from comfy_execution.progress import get_progress_state, PreviewImageTuple
 from PIL import Image
@@ -21,6 +20,17 @@ import numpy as np
 class ComfyAPI_latest(ComfyAPIBase):
     VERSION = "latest"
     STABLE = False
+
+    def __init__(self):
+        super().__init__()
+        self.node_replacement = self.NodeReplacement()
+        self.execution = self.Execution()
+
+    class NodeReplacement(ProxiedSingleton):
+        async def register(self, node_replace: io.NodeReplace) -> None:
+            """Register a node replacement mapping."""
+            from server import PromptServer
+            PromptServer.instance.node_replace_manager.register(node_replace)
 
     class Execution(ProxiedSingleton):
         async def set_progress(
@@ -74,8 +84,6 @@ class ComfyAPI_latest(ComfyAPIBase):
                 image=to_display,
             )
 
-    execution: Execution
-
 class ComfyExtension(ABC):
     async def on_load(self) -> None:
         """
@@ -106,6 +114,7 @@ class Types:
     VideoComponents = VideoComponents
     MESH = MESH
     VOXEL = VOXEL
+    File3D = File3D
 
 ComfyAPI = ComfyAPI_latest
 
@@ -113,7 +122,7 @@ ComfyAPI = ComfyAPI_latest
 if TYPE_CHECKING:
     import comfy_api.latest.generated.ComfyAPISyncStub  # type: ignore
 
-    ComfyAPISync: Type[comfy_api.latest.generated.ComfyAPISyncStub.ComfyAPISyncStub]
+    ComfyAPISync: type[comfy_api.latest.generated.ComfyAPISyncStub.ComfyAPISyncStub]
 ComfyAPISync = create_sync_class(ComfyAPI_latest)
 
 # create new aliases for io and ui
