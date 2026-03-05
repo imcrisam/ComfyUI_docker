@@ -1,56 +1,57 @@
-# 🟢 Imagen base con soporte GPU (CUDA + Python)
-# FROM nvidia/cuda:13.0.2-cudnn-runtime-ubuntu22.04
-# FROM nvidia/cuda:13.0.2-cudnn-devel-ubuntu22.04
-## docker build -f Dockerfile.base -t comfy-base:cuda12.4 .
 
-FROM nvidia/cuda:12.4.1-cudnn-devel-ubuntu22.04
+# # Build arg for GPU architectures - specify which CUDA compute capabilities to compile for
+# # Common values:
+# #   7.0  - Tesla V100
+# #   7.5  - RTX 2060, 2070, 2080, Titan RTX
+# #   8.0  - A100, A800 (Ampere data center)
+# #   8.6  - RTX 3060, 3070, 3080, 3090 (Ampere consumer)
+# #   8.9  - RTX 4070, 4080, 4090 (Ada Lovelace)
+# #   9.0  - H100, H800 (Hopper data center)
+# #   12.0 - RTX 5070, 5080, 5090 (Blackwell) - Note: sm_120 architecture
+# #
+# # Examples:
+# #   RTX 3060: --build-arg CUDA_ARCHITECTURES="8.6"
+# #   RTX 4090: --build-arg CUDA_ARCHITECTURES="8.9"
+# #   Multiple: --build-arg CUDA_ARCHITECTURES="8.0;8.6;8.9"
+# #
+# # Note: Including 8.9 or 9.0 may cause compilation issues on some setups
+# # Default includes 8.0 and 8.6 for broad Ampere compatibility
 
-# 🧩 Variables básicas de entorno
-# ENV DEBIAN_FRONTEND=noninteractive
+FROM nvidia/custom_base:cuda12.8
+
+ARG CUDA_ARCHITECTURES="8.0;8.6"
+
 ENV PYTHONUNBUFFERED=1
+ENV PIP_NO_CACHE_DIR=1
 
 RUN apt-get update && apt-get install -y \
+    python3 \
+    python3-pip \
     git \
-    wget \
     ffmpeg \
     libgl1 \
-    python3 \
-    python3-venv \
-    python3-pip \
-    sox \
-    libportaudio2 \
-    portaudio19-dev \
+    libglib2.0-0 \
+    build-essential \
     && rm -rf /var/lib/apt/lists/*
 
+RUN ln -s /usr/bin/python3 /usr/bin/python
 
-RUN pip install --upgrade pip
+RUN python -m pip install --upgrade pip
 
+# PyTorch CUDA 12.8
 RUN pip install \
-    sounddevice \
-    deepdiff \
-    omegaconf \
-    piexif \
-    matrix-nio \
-    pytorch-lightning \
-    py-cpuinfo 
+ torch==2.7.1+cu128 \
+ torchvision==0.22.1+cu128 \
+ torchaudio==2.7.1+cu128 \
+ --index-url https://download.pytorch.org/whl/cu128
 
-# 🧩 Crear entorno virtual (opcional pero recomendable)
-# RUN python3 -m venv venv
-# ENV PATH="/app/venv/bin:$PATH"
-
-RUN pip install setuptools wheel
-
-# RUN pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124
-RUN pip install torch==2.5.1 torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124
-
-RUN pip install opencv-python-headless
-RUN pip install diffusers==0.30.3 transformers accelerate
-RUN pip install ftfy gguf onnx "imageio[ffmpeg]"
-# RUN pip uninstall torch
-# RUN pip install sageattention
-# RUN pip install sageattention==2.2.0 --no-build-isolation
-
-
-RUN pip install safetensors==0.4.0 accelerate transformers
-# opcional: instalar onnxruntime si alguna extensión lo requiere
-RUN pip install onnxruntime
+# Dependencias mínimas de ComfyUI
+RUN pip install \
+ numpy \
+ pillow \
+ tqdm \
+ pyyaml \
+ psutil \
+ einops \
+ safetensors \
+ opencv-python-headless
