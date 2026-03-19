@@ -1,7 +1,13 @@
 
 FROM comfy/base:latest
 
-RUN pip install nvidia-ml-py bitsandbytes
+RUN pip install nvidia-ml-py bitsandbytes qwen-tts gguf ftfy
+
+RUN pip install --no-cache-dir --upgrade \
+    huggingface_hub==0.36.2 \
+    diffusers==0.30.3 \
+    transformers==4.57.3 \
+    accelerate==1.12.0
 
 WORKDIR /app
 
@@ -12,12 +18,17 @@ RUN pip install -r requirements.txt
 COPY manager_requirements.txt .
 RUN pip install -r manager_requirements.txt
 
+
 COPY . .
 # Puerto por defecto de ComfyUI
+
+# RUN pip install --force-reinstall huggingface_hub==0.19.4
+
 EXPOSE 8188
 
-# CMD bash -c "python3 main.py --listen 0.0.0.0 --port 8188 --lowvram --enable-manager && sleep infinity"
 CMD bash -c "python3 main.py --listen 0.0.0.0 --port 8188 --enable-manager && sleep infinity"
+# CMD bash -c "python3 main.py --listen 0.0.0.0 --port 8188 --enable-manager --gpu-only && sleep infinity"
+# CMD bash -c "python3 main.py --listen 0.0.0.0 --port 8188 --lowvram --enable-manager && sleep infinity"
 
 
 
