@@ -10,8 +10,22 @@ RUN pip install \
     imageio-ffmpeg \
     sageattention \
     onnx \
-    onnxruntime
+    onnxruntime 
 
+RUN pip install \
+    open-clip-torch \
+    matplotlib \
+    lark \
+    omegaconf \
+    matrix-nio \
+    requirements-parser
+    
+RUN apt-get update && apt-get install -y \
+    ninja-build \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*   
+
+RUN python3 -m pip install flash-attn --no-build-isolation
 
 RUN pip install --no-cache-dir --upgrade \
     huggingface_hub==0.36.2 \
@@ -20,10 +34,7 @@ RUN pip install --no-cache-dir --upgrade \
     accelerate==1.12.0
 
 
-
-
 WORKDIR /app
-
 #guarda capa
 COPY requirements.txt .
 RUN pip install -r requirements.txt
