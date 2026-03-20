@@ -3,11 +3,24 @@ FROM comfy/base:latest
 
 RUN pip install nvidia-ml-py bitsandbytes qwen-tts gguf ftfy
 
+RUN pip install \
+    torchdiffeq \
+    edge-tts \
+    openai-whisper \
+    imageio-ffmpeg \
+    sageattention \
+    onnx \
+    onnxruntime
+
+
 RUN pip install --no-cache-dir --upgrade \
     huggingface_hub==0.36.2 \
     diffusers==0.30.3 \
     transformers==4.57.3 \
     accelerate==1.12.0
+
+
+
 
 WORKDIR /app
 

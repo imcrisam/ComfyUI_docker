@@ -1,4 +1,4 @@
-
+# # docker build -t comfy/base:latest -f Dockerfile.base ./docker_cuda
 # # Build arg for GPU architectures - specify which CUDA compute capabilities to compile for
 # # Common values:
 # #   7.0  - Tesla V100
@@ -30,6 +30,7 @@ RUN apt-get update && apt-get install -y \
     git \
     ffmpeg \
     libgl1 \
+    sox  \
     libglib2.0-0 \
     build-essential \
     && rm -rf /var/lib/apt/lists/*
