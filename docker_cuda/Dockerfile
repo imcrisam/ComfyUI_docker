@@ -1,46 +1,34 @@
 
-FROM comfy/base:latest
+FROM comfy/base:cuda13
 
-RUN pip install nvidia-ml-py bitsandbytes qwen-tts gguf ftfy
+
 
 RUN pip install \
-    torchdiffeq \
     edge-tts \
     openai-whisper \
     imageio-ffmpeg \
-    sageattention \
-    onnx \
-    onnxruntime 
-
-RUN pip install \
-    open-clip-torch \
-    matplotlib \
+    nvidia-ml-py \
     lark \
-    omegaconf \
-    matrix-nio \
-    requirements-parser
-    
-RUN apt-get update && apt-get install -y \
-    ninja-build \
-    build-essential \
-    && rm -rf /var/lib/apt/lists/*   
+    spandrel \
+    kornia \
+    matplotlib \
+    requirements-parser 
 
-RUN python3 -m pip install flash-attn --no-build-isolation
+RUN pip install   qwen-tts gguf ftfy 
 
-RUN pip install --no-cache-dir --upgrade \
-    huggingface_hub==0.36.2 \
-    diffusers==0.30.3 \
-    transformers==4.57.3 \
-    accelerate==1.12.0
+# RUN apt-get update && apt-get install -y protobuf-compiler
+
+
+RUN python3 -m pip install --no-cache-dir \
+protobuf==3.20.3 \
+sentencepiece
+
+RUN pip install   pywavelets
+
 
 
 WORKDIR /app
-#guarda capa
-COPY requirements.txt .
-RUN pip install -r requirements.txt
 
-COPY manager_requirements.txt .
-RUN pip install -r manager_requirements.txt
 
 
 COPY . .
@@ -50,7 +38,7 @@ COPY . .
 
 EXPOSE 8188
 
-CMD bash -c "python3 main.py --listen 0.0.0.0 --port 8188 --enable-manager && sleep infinity"
+CMD bash -c "python3 main.py --listen 0.0.0.0 --port 8188 --enable-manager --use-sage-attention"
 # CMD bash -c "python3 main.py --listen 0.0.0.0 --port 8188 --enable-manager --gpu-only && sleep infinity"
 # CMD bash -c "python3 main.py --listen 0.0.0.0 --port 8188 --lowvram --enable-manager && sleep infinity"
 

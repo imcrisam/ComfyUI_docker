@@ -1,6 +1,7 @@
 services:
-  ai:
-    image: comfy-app
+  comfyui:
+    image: comfyui-app-cuda13
+    container_name: comfyui_container
     build:
       context: ../
       dockerfile: ./docker_cuda/Dockerfile

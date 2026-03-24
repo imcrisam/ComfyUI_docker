@@ -1,0 +1,55 @@
+# CUDA 13 Base Image for ComfyUI
+# docker build -t nvidia/custom_base:cuda13 -f docker_cuda/Dockerfile.cuda13 .
+
+# FROM nvidia/cuda:13.2.0-cudnn-runtime-ubuntu24.04
+FROM nvidia/cuda:13.2.0-cudnn-devel-ubuntu22.04
+
+ARG CUDA_ARCHITECTURES="8.0;8.6;"
+
+ENV PYTHONUNBUFFERED=1
+ENV PIP_NO_CACHE_DIR=1
+
+ENV FLASH_ATTENTION_SKIP_CUDA_BUILD=TRUE
+
+# Install basic system dependencies
+RUN apt-get update && apt-get install -y \
+    python3 \
+    python3-pip \
+    git \
+    ffmpeg \
+    libgl1 \
+    sox  \
+    ninja-build \
+    libglib2.0-0 \
+    build-essential \
+    curl \
+    wget \
+    && apt clean
+
+RUN pip install bitsandbytes onnxruntime
+
+    
+    # Alias python
+# RUN ln -s /usr/bin/python3 /usr/bin/python
+    
+    # Update pip
+    # RUN pip install --break-system-packages
+RUN pip install --upgrade pip setuptools wheel pytorch-lightning
+
+# PyTorch CUDA 13
+# RUN pip uninstall -y torch torchvision torchaudio
+RUN pip install --pre torch torchvision torchaudio --index-url https://download.pytorch.org/whl/nightly/cu130
+
+# RUN pip install \
+#   torch==2.10.0+cu130 \
+#   torchvision==0.25.0+cu130 \
+#   torchaudio==2.10.0+cu130 \
+#   --index-url https://download.pytorch.org/whl/cu130
+#     #  --break-system-packages
+
+RUN pip install sageattention
+
+RUN pip install flash-attn --no-build-isolation
+
+# Set working directory
+WORKDIR /app
